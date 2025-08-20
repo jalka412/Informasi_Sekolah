@@ -103,7 +103,7 @@ Siswa
 
 ## DEMO PREMIUM
 
-https://sekolah.pixeloverture.net
+https://sekolah.karsagroup.id
 
 Admin
 ```bash
@@ -114,7 +114,7 @@ Admin
 ## PEMBELIAN
 
 ~~Promo 10/10 Orang Pertama **500rb**~~
-Promo 10/20 Kloter Berikutnya **750rb**
+Promo 15/20 Kloter Berikutnya **750rb**
 
 Hubungi 
 - https://wa.me/6282244793613
