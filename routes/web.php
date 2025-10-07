@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('l');
 })->middleware('auth');
 
 Auth::routes();
@@ -65,9 +65,12 @@ Route::group(['middleware' => ['auth', 'checkRole:admin']], function () {
     Route::resource('mapel', MapelController::class);
     Route::resource('guru', GuruController::class);
     Route::resource('kelas', KelasController::class);
-    Route::resource('siswa', SiswaController::class);
+    Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplate'])->name('siswa.download_template');
     Route::resource('user', UserController::class);
     Route::resource('jadwal', JadwalController::class);
     Route::resource('pengumuman-sekolah', PengumumanSekolahController::class);
     Route::resource('pengaturan', PengaturanController::class);
+    Route::post('siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
+    Route::get('siswa/export-template', [SiswaController::class, 'exportTemplate'])->name('siswa.export_template');
+    Route::resource('siswa', SiswaController::class);
 });

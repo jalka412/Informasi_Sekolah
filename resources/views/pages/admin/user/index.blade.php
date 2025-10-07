@@ -36,17 +36,20 @@
                                                 <td>{{ $data->roles }}</td>
                                                 <td>
                                                     <div class="d-flex">
-                                                        <form method="POST"
-                                                            action="{{ route('user.destroy', $data->id) }}">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button class="btn btn-danger btn-sm show_confirm"
-                                                                data-toggle="tooltip" title='Delete'
-                                                                style="margin-left: 8px"><i
-                                                                    class="nav-icon fas fa-trash-alt"></i> &nbsp;
-                                                                Hapus</button>
-                                                        </form>
-                                                    </div>
+        {{-- TAMBAHKAN TOMBOL INI --}}
+        <a href="{{ route('user.edit', $data->id) }}" class="btn btn-success btn-sm">
+            <i class="nav-icon fas fa-edit"></i> &nbsp; Edit
+        </a>
+
+        {{-- Ini tombol hapus yang sudah ada --}}
+        <form method="POST" action="{{ route('user.destroy', $data->id) }}">
+            @csrf
+            @method('delete')
+            <button class="btn btn-danger btn-sm show_confirm" data-toggle="tooltip" title='Delete' style="margin-left: 8px">
+                <i class="nav-icon fas fa-trash-alt"></i> &nbsp; Hapus
+            </button>
+        </form>
+    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -160,23 +163,26 @@
                         '<label for="name">Nama Admin</label><input id="name" type="text" placeholder="Nama admin" class="form-control" name="name" value="{{ old('name') }}" autocomplete="off">'
                     );
                 } else if (kel == "orangtua") {
-                    $("#noId").html(`
-                <label for="name">Nama</label>
-                <input id="name" type="text" placeholder="Nama" class="form-control" name="name" value="{{ old('name') }}" autocomplete="off">
-                <label for="no_telp">No Telepon</label>
-                <input id="no_telp" type="text" placeholder="No Telepon" class="form-control" name="no_telp" value="{{ old('no_telp') }}" autocomplete="off">
-                <label for="alamat">Alamat</label>
-                <input id="alamat" type="text" placeholder="Alamat" class="form-control" name="alamat" value="{{ old('alamat') }}" autocomplete="off">
-                <label for="siswa">Daftar Siswa</label>
-                <select id="siswa" name="siswa[]" class="select2 form-control" multiple="multiple">
-                    @foreach ($siswaList as $siswa)
-                        <option value="{{ $siswa->id }}" {{ in_array($siswa->id, old('siswa', [])) ? 'selected' : '' }}>{{ $siswa->user->name }}</option>
-                    @endforeach
-                </select>
-            `);
+    $("#noId").html(`
+        <label for="name">Nama</label>
+        <input id="name" type="text" placeholder="Nama" class="form-control" name="name" value="{{ old('name') }}" autocomplete="off">
+        <label for="no_telp">No Telepon</label>
+        <input id="no_telp" type="text" placeholder="No Telepon" class="form-control" name="no_telp" value="{{ old('no_telp') }}" autocomplete="off">
+        <label for="alamat">Alamat</label>
+        <input id="alamat" type="text" placeholder="Alamat" class="form-control" name="alamat" value="{{ old('alamat') }}" autocomplete="off">
+        <label for="siswa">Daftar Siswa</label>
+        <select id="siswa" name="siswa[]" class="select2 form-control" multiple="multiple">
+            @foreach ($siswaList as $siswa)
+                {{-- KODE YANG SUDAH DIPERBAIKI --}}
+                <option value="{{ $siswa->id }}" {{ in_array($siswa->id, old('siswa', [])) ? 'selected' : '' }}>
+                    {{ $siswa->user?->name ?? ($siswa->nama ?? 'Siswa Tanpa User') }}
+                </option>
+            @endforeach
+        </select>
+    `);
 
-                    // Reinitialize select2 for the dynamically added select element
-                    $('.select2').select2();
+    // Reinitialize select2 for the dynamically added select element
+    $('.select2').select2();
                 } else {
                     $("#noId").html("");
                 }

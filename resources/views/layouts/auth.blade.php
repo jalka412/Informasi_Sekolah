@@ -29,7 +29,7 @@
                         @endif
                         @yield('content')
                         <div class="simple-footer">
-                            Copyright &copy; Pixel Overture {{ date('Y') }}
+                            Copyright &copy; SMKN 1 MAJALAYA {{ date('Y') }}
                         </div>
                     </div>
                 </div>

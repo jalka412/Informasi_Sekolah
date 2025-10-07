@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Kelas;
+use App\Models\Jurusan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 
@@ -16,9 +17,18 @@ class KelasController extends Controller
      */
     public function index()
     {
-        $kelas = Kelas::orderBy('nama_kelas', 'asc')->get();
-        $guru = Guru::orderBy('nama', 'asc')->get();
-        return view('pages.admin.kelas.index', compact('kelas', 'guru'));
+        // 1. Ambil semua ID guru yang sudah menjadi wali kelas
+        $assignedGuruIds = Kelas::pluck('guru_id')->all();
+
+        // 2. Ambil data guru yang ID-nya TIDAK ADA dalam daftar yang sudah ditugaskan
+        $availableGurus = Guru::whereNotIn('id', $assignedGuruIds)->get();
+
+        // 3. Ambil data lain yang dibutuhkan oleh view
+        $kelas = Kelas::OrderBy('nama_kelas', 'asc')->get();
+        $jurusan = Jurusan::all();
+
+        // 4. Kirim semua data yang dibutuhkan ke view
+        return view('pages.admin.kelas.index', compact('kelas', 'jurusan', 'availableGurus'));
     }
 
     /**
@@ -39,18 +49,17 @@ class KelasController extends Controller
      */
     public function store(Request $request)
     {
-
         $this->validate($request, [
-            'nama_kelas' => 'required|unique:kelas',
-            'guru_id' => 'required|unique:kelas'
+            'nama_kelas' => 'required',
+            'jurusan_id' => 'required',
+            'guru_id' => 'required|unique:kelas,guru_id',
         ], [
-            'nama_kelas.unique' => 'Nama Kelas sudah ada',
-            'guru_id.unique' => 'Guru sudah memiliki kelas'
+            'guru_id.unique' => 'Guru ini sudah menjadi wali kelas lain.',
         ]);
 
         Kelas::create($request->all());
 
-        return redirect()->route('kelas.index')->with('success', 'Data berhasil disimpan');
+        return redirect()->route('kelas.index')->with('success', 'Data kelas berhasil ditambahkan');
     }
 
     /**

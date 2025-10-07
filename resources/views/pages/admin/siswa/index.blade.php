@@ -9,7 +9,10 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
                         <h4>List Siswa</h4>
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="nav-icon fas fa-folder-plus"></i>&nbsp; Tambah Data Guru</button>
+                        <div>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="nav-icon fas fa-folder-plus"></i>&nbsp; Tambah Data Siswa</button>
+                            <button class="btn btn-success" data-toggle="modal" data-target="#importModal"><i class="nav-icon fas fa-file-import"></i>&nbsp; Import Data Siswa</button>
+                        </div>
                     </div>
                     <div class="card-body">
                         @include('partials.alert')
@@ -21,16 +24,18 @@
                                         <th>Nama Siswa</th>
                                         <th>NIS</th>
                                         <th>Kelas</th>
+                                        <th>Foto</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($siswa as $result => $data)
+                                    @foreach ($siswas as $data)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $data->nama }}</td>
                                         <td>{{ $data->nis }}</td>
-                                        <td>{{ $data->kelas->nama_kelas }}</td>
+                                        <td>{{ $data->kelas->nama_kelas ?? '' }}</td>
+                                        <td><img src="{{ asset('storage/' . $data->foto) }}" alt="Foto Siswa" width="50"></td>
                                         <td>
                                             <div class="d-flex">
                                                 <a href="{{ route('siswa.show', Crypt::encrypt($data->id)) }}" class="btn btn-primary btn-sm" style="margin-right: 8px"><i class="nav-icon fas fa-user"></i> &nbsp; Profile</a>
@@ -126,6 +131,37 @@
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">Import Data Siswa</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ route('siswa.import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Pilih File Excel/CSV</label>
+            <input type="file" name="file" class="form-control" required>
+            <small class="form-text text-muted">Gunakan template yang telah diunduh.</small>
+          </div>
+            <a href="{{ route('siswa.export_template') }}">Download Template Excel di sini</a>
+            <p class="text-info mt-2">
+                <small><strong>Catatan:</strong> Pastikan kolom `kelas` di dalam file Excel diisi dengan **Nama Kelas** yang valid dan sudah terdaftar di sistem (contoh: "X TSM 1").</small>
+            </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('script')
@@ -146,6 +182,11 @@
                     form.submit();
                 }
             });
+    });
+
+    $('.custom-file-input').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').addClass("selected").html(fileName);
     });
 
 </script>

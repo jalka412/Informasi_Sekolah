@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule; 
 
 class UserController extends Controller
 {
@@ -162,14 +163,11 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit()
+    public function edit(User $user)
     {
-        $guru = Guru::where('user_id', Auth::user()->id)->first();
-        $siswa = Siswa::where('user_id', Auth::user()->id)->first();
-        $admin = User::findOrFail(Auth::user()->id);
-        $orangtua = Orangtua::where('user_id', Auth::user()->id)->first();
-
-        return view('pages.profile', compact('guru', 'siswa', 'admin', 'orangtua'));
+        // 'User $user' (Route Model Binding) secara otomatis mengambil
+        // data user dari database berdasarkan ID di URL.
+        return view('pages.admin.user.edit', compact('user'));
     }
 
     /**
@@ -179,53 +177,30 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+   public function update(Request $request, User $user)
     {
-        DB::beginTransaction();
-        try {
-            $data = $request->all();
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'required', 'string', 'email',
+                Rule::unique('users')->ignore($user->id), // Izinkan email ini jika tidak diubah
+            ],
+            'roles' => 'required|string',
+            'password' => 'nullable|string|min:6', // Boleh kosong
+        ]);
 
-            if (Auth::user()->roles == 'guru') {
-                // Save to guru table
-                $guru = Guru::where('user_id', Auth::user()->id)->first();
-                $guru->nama = $data['nama'];
-                $guru->nip = $data['nip'];
-                $guru->alamat = $data['alamat'];
-                $guru->no_telp = $data['no_telp'];
-                $guru->update($data);
-            } else if (Auth::user()->roles == 'siswa') {
-                // Save to siswa table
-                $siswa = Siswa::where('user_id', Auth::user()->id)->first();
-                $siswa->nama = $data['nama'];
-                $siswa->nis = $data['nis'];
-                $siswa->alamat = $data['alamat'];
-                $siswa->telp = $data['telp'];
-                $siswa->update($data);
-            } else if (Auth::user()->roles == 'orangtua') {
-                // Save to orangtua table
-                $orangtua = Orangtua::where('user_id', Auth::user()->id)->first();
-                $orangtua->alamat = $data['alamat'];
-                $orangtua->no_telp = $data['no_telp'];
-                $orangtua->update($data);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->roles = $request->roles;
 
-                if (isset($data['siswas']) && is_array($data['siswas'])) {
-                    $siswaIds = array_map('intval', $data['siswas']); // Ensure IDs are integers
-                    $orangtua->siswas()->sync($siswaIds); // Update the pivot table
-                }
-            }
-
-            // Save to user table
-            $user = Auth::user();
-            $user->name = $data['name'];
-            $user->email = $data['email'];
-            $user->update($data);
-
-            DB::commit();
-            return redirect()->route('profile')->with('success', 'Data berhasil diubah');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()->withErrors($e->getMessage());
+        // Jika password diisi, enkripsi dan update
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
         }
+
+        $user->save();
+
+        return redirect()->route('user.index')->with('success', 'Data user berhasil diperbarui.');
     }
 
     /**
@@ -277,4 +252,5 @@ class UserController extends Controller
 
         return redirect()->route('profile')->with('success', 'Password berhasil diubah');
     }
+    
 }

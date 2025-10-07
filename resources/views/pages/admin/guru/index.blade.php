@@ -150,4 +150,19 @@
     });
 
 </script>
+
+<script>
+        // Jalankan script saat halaman siap
+        $(document).ready(function() {
+            // 1. Buat objek untuk membaca parameter dari URL
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 2. Cek apakah ada parameter 'action' dengan nilai 'add'
+            if (urlParams.get('action') === 'add') {
+                // 3. Jika ada, buka modal untuk menambah guru.
+                // Ganti '#exampleModal' jika ID modal Anda berbeda.
+                $('#exampleModal').modal('show');
+            }
+        });
+    </script>
 @endpush

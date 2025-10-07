@@ -28,7 +28,8 @@
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $data->nama_kelas }}</td>
-                                                <td>{{ $data->guru->nama }}</td>
+                                                {{-- Menggunakan Nullsafe Operator untuk keamanan --}}
+                                                <td>{{ $data->guru?->nama ?? 'Guru Dihapus' }}</td>
                                                 <td>
                                                     <div class="d-flex">
                                                         <a href="{{ route('kelas.edit', $data->id) }}" class="btn btn-success btn-sm"><i class="nav-icon fas fa-edit"></i> &nbsp; Edit</a>
@@ -47,13 +48,15 @@
                         </div>
                     </div>
                 </div>
+                
+                {{-- MODAL UNTUK TAMBAH DATA KELAS --}}
                 <div class="modal fade" tabindex="-1" role="dialog" id="exampleModal">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Tambah Mata Pelajaran</h5>
+                                <h5 class="modal-title">Tambah Data Kelas</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
+                                    <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
@@ -65,7 +68,7 @@
                                                 <div class="alert alert-danger alert-dismissible show fade">
                                                     <div class="alert-body">
                                                         <button class="close" data-dismiss="alert">
-                                                        <span>&times;</span>
+                                                            <span>&times;</span>
                                                         </button>
                                                         @foreach ($errors->all() as $error )
                                                             {{ $error }}
@@ -73,19 +76,42 @@
                                                     </div>
                                                 </div>
                                             @endif
+
                                             <div class="form-group">
                                                 <label for="nama_kelas">Nama Kelas</label>
-                                                <input type="text" id="nama_kelas" name="nama_kelas" class="form-control @error('nama_kelas') is-invalid @enderror" placeholder="{{ __('Nama Kelas') }}">
+                                                <input type="text" id="nama_kelas" name="nama_kelas" class="form-control @error('nama_kelas') is-invalid @enderror" placeholder="Contoh: X TSM 1" required>
                                             </div>
+
                                             <div class="form-group">
-                                                <label for="guru_id">Wali Kelas</label>
-                                                <select id="guru_id" name="guru_id" class="select2 form-control ">
-                                                    <option value="">-- Pilih Wali Kelas --</option>
-                                                    @foreach ($guru as $data)
-                                                        <option value="{{ $data->id }}">{{ $data->nama }}</option>
+                                                <label for="jurusan_id">Jurusan</label>
+                                                <select id="jurusan_id" name="jurusan_id" class="form-control" required>
+                                                    <option value="">-- Pilih Jurusan --</option>
+                                                    @foreach ($jurusan as $j)
+                                                        <option value="{{ $j->id }}">{{ $j->nama_jurusan }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
+
+                                            {{-- ## BAGIAN YANG DIUBAH ## --}}
+                                            <div class="form-group">
+                                                <label for="guru_id_select">Wali Kelas</label>
+                                                <select id="guru_id_select" name="guru_id" class="form-control @error('guru_id') is-invalid @enderror" required>
+                                                    <option value="">-- Pilih Wali Kelas --</option>
+                                                    
+                                                    {{-- Loop hanya guru yang tersedia (dari controller) --}}
+                                                    @foreach ($availableGurus as $guru)
+                                                        <option value="{{ $guru->id }}">{{ $guru->nama }}</option>
+                                                    @endforeach
+
+                                                    <option value="" disabled>─ ─ ─ ─ ─ ─ ─ ─ ─</option>
+                                                    {{-- Opsi pintas untuk menambah guru baru --}}
+                                                    <option value="add_new_guru" class="text-primary font-weight-bold">
+                                                        + Tambah Guru Baru
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            {{-- ## BATAS BAGIAN YANG DIUBAH ## --}}
+
                                         </div>
                                     </div>
                                     <div class="modal-footer bg-whitesmoke br">
@@ -99,7 +125,7 @@
                 </div>
             </div>
         </div>
-  </section>
+    </section>
 @endsection
 
 @push('script')
@@ -117,7 +143,19 @@
             })
             .then((willDelete) => {
                 if (willDelete) {
-                form.submit();
+                    form.submit();
+                }
+            });
+        });
+    </script>
+
+    {{-- ## SCRIPT BARU UNTUK PINTASAN ## --}}
+    <script>
+        $(document).ready(function() {
+            $('#guru_id_select').change(function() {
+                if ($(this).val() === 'add_new_guru') {
+                    // Arahkan ke halaman tambah guru
+                     window.location.href = "{{ route('guru.index') }}?action=add";
                 }
             });
         });

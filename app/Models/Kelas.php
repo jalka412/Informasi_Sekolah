@@ -9,7 +9,7 @@ class Kelas extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_kelas', 'guru_id'];
+    protected $fillable = ['jurusan_id','nama_kelas', 'guru_id'];
 
     public function guru()
     {
