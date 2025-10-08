@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class UserSeeder extends Seeder
 {
@@ -18,6 +19,12 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('users')->truncate();
+        DB::table('orangtuas')->truncate();
+        DB::table('orangtua_siswas')->truncate();
+        Schema::enableForeignKeyConstraints();
+
         $guru = Guru::all();
         $siswa = Siswa::all();
 
@@ -71,6 +78,9 @@ class UserSeeder extends Seeder
 
         // update user_id to guru table as user id
         foreach ($guru as $g) {
+            if ($g->nip === 'GURU-PLACEHOLDER') {
+                continue;
+            }
             DB::table('gurus')->where('nip', $g->nip)->update([
                 'user_id' => DB::table('users')->where('nip', $g->nip)->first()->id
             ]);

@@ -13,37 +13,52 @@
                         </div>
                         <div class="card-body">
                             @include('partials.alert')
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="table-2">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Nama Kelas</th>
-                                            <th>Wali Kelas</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($kelas as $data)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $data->nama_kelas }}</td>
-                                                {{-- Menggunakan Nullsafe Operator untuk keamanan --}}
-                                                <td>{{ $data->guru?->nama ?? 'Guru Dihapus' }}</td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <a href="{{ route('kelas.edit', $data->id) }}" class="btn btn-success btn-sm"><i class="nav-icon fas fa-edit"></i> &nbsp; Edit</a>
-                                                        <form method="POST" action="{{ route('kelas.destroy', $data->id) }}">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button class="btn btn-danger btn-sm show_confirm" data-toggle="tooltip" title='Delete' style="margin-left: 8px"><i class="nav-icon fas fa-trash-alt"></i> &nbsp; Hapus</button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                            <div id="accordion">
+                                @foreach ($jurusan as $j)
+                                <div class="accordion">
+                                    <div class="accordion-header" role="button" data-toggle="collapse" data-target="#panel-body-{{ $j->id }}" aria-expanded="true">
+                                        <h4>Jurusan: {{ $j->nama_jurusan }} ({{ $j->kelas->count() }} kelas)</h4>
+                                    </div>
+                                    <div class="accordion-body collapse show" id="panel-body-{{ $j->id }}" data-parent="#accordion">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-md">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nama Kelas</th>
+                                                        <th>Wali Kelas</th>
+                                                        <th>Jumlah Siswa</th>
+                                                        <th>Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse ($j->kelas->sortBy('nama_kelas') as $kelas)
+                                                        <tr>
+                                                            <td>{{ $kelas->nama_kelas }}</td>
+                                                            <td>{{ $kelas->guru?->nama ?? '-' }}</td>
+                                                            <td>{{ $kelas->siswa->count() }} siswa</td>
+                                                            <td>
+                                                                <div class="d-flex">
+                                                                    <a href="{{ route('kelas.show', $kelas->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> &nbsp; Lihat Siswa</a>
+                                                                    <a href="{{ route('kelas.edit', $kelas->id) }}" class="btn btn-success btn-sm ml-2"><i class="fas fa-edit"></i> &nbsp; Edit</a>
+                                                                    <form method="POST" action="{{ route('kelas.destroy', $kelas->id) }}">
+                                                                        @csrf
+                                                                        @method('delete')
+                                                                        <button class="btn btn-danger btn-sm show_confirm ml-2" data-toggle="tooltip" title='Delete'><i class="fas fa-trash-alt"></i> &nbsp; Hapus</button>
+                                                                    </form>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="4" class="text-center">Belum ada kelas untuk jurusan ini.</td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>

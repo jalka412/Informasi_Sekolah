@@ -4,9 +4,9 @@ namespace App\Imports;
 
 use App\Models\Siswa;
 use App\Models\Kelas;
-use App\Models\User;
+use App\Models\Guru;
 use App\Models\Jurusan; // <-- Tambahkan ini
-use Illuminate\Support\Facades\Hash;
+
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Str;
@@ -32,10 +32,12 @@ class SiswaImport implements ToModel, WithHeadingRow
                 return null; 
             }
 
+            $placeholderGuru = Guru::where('nip', 'GURU-PLACEHOLDER')->first();
+
             $kelas = Kelas::create([
                 'nama_kelas' => $namaKelas,
                 'jurusan_id' => $jurusanId,
-                'guru_id'    => 1, // <-- !! GANTI ANGKA 1 DENGAN ID GURU "BELUM DITENTUKAN"
+                'guru_id'    => $placeholderGuru->id, // Use the placeholder guru's ID
             ]);
         }
         // --- BATAS LOGIKA KELAS ---
@@ -43,30 +45,15 @@ class SiswaImport implements ToModel, WithHeadingRow
         if (Siswa::where('nis', $row['nis'])->exists()) {
             return null;
         }
-        
-        $namaDepan = Str::lower(strtok($row['nama'], ' '));
-        $email = $namaDepan . '.' . $row['nis'] . '@sekolah.sch.id';
-
-        if (User::where('email', $email)->exists()) {
-            $email = $namaDepan . '.' . $row['nis'] . rand(1, 99) . '@sekolah.sch.id';
-        }
-
-        $user = User::create([
-            'name'     => $row['nama'],
-            'email'    => $email,
-            'password' => Hash::make('password'),
-            'roles'    => 'siswa',
-        ]);
 
         $jenisKelamin = (!empty($row['jenis_kelamin']) && strtoupper(trim($row['jenis_kelamin'])) == 'L') ? 'Laki-laki' : 'Perempuan';
 
         return new Siswa([
-            'user_id'       => $user->id,
             'nama'          => $row['nama'],
             'nis'           => $row['nis'],
             'kelas_id'      => $kelas->id,
-            'telp'          => $row['telp'] ?? null,
-            'alamat'        => $row['alamat'] ?? null,
+            'telp'          => !empty($row['telp']) ? $row['telp'] : 'Belum Diisi',
+            'alamat'        => !empty($row['alamat']) ? $row['alamat'] : 'Belum Diisi',
             'jenis_kelamin' => $jenisKelamin,
             'foto'          => 'images/siswa/default.png',
         ]);

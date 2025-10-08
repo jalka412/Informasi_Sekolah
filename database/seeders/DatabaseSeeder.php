@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call(JurusanSeeder::class);
         $this->call(MapelSeeder::class);
         $this->call(GuruSeeder::class);
+        $this->call(PlaceholderGuruSeeder::class);
         $this->call(KelasSeeder::class);
         $this->call(JadwalSeeder::class);
         $this->call(SiswaSeeder::class);

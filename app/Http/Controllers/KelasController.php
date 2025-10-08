@@ -17,18 +17,15 @@ class KelasController extends Controller
      */
     public function index()
     {
-        // 1. Ambil semua ID guru yang sudah menjadi wali kelas
-        $assignedGuruIds = Kelas::pluck('guru_id')->all();
+        // Ambil semua jurusan beserta kelas-kelasnya (eager loading)
+        $jurusan = Jurusan::with('kelas')->orderBy('nama_jurusan', 'asc')->get();
 
-        // 2. Ambil data guru yang ID-nya TIDAK ADA dalam daftar yang sudah ditugaskan
+        // Ambil data guru yang tersedia untuk form
+        $assignedGuruIds = Kelas::pluck('guru_id')->all();
         $availableGurus = Guru::whereNotIn('id', $assignedGuruIds)->get();
 
-        // 3. Ambil data lain yang dibutuhkan oleh view
-        $kelas = Kelas::OrderBy('nama_kelas', 'asc')->get();
-        $jurusan = Jurusan::all();
-
-        // 4. Kirim semua data yang dibutuhkan ke view
-        return view('pages.admin.kelas.index', compact('kelas', 'jurusan', 'availableGurus'));
+        // Kirim data ke view
+        return view('pages.admin.kelas.index', compact('jurusan', 'availableGurus'));
     }
 
     /**
@@ -70,7 +67,8 @@ class KelasController extends Controller
      */
     public function show($id)
     {
-        abort(404);
+        $kelas = Kelas::with('siswa', 'guru', 'jurusan')->findOrFail($id);
+        return view('pages.admin.kelas.show', compact('kelas'));
     }
 
     /**
